@@ -70,6 +70,42 @@ rules:
   - list
   - watch
 - apiGroups:
+  - iam.services.k8s.aws
+  resources:
+  - roles
+  - roles/status
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - mwaa.services.k8s.aws
+  resources:
+  - environments
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - mwaa.services.k8s.aws
+  resources:
+  - environments/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - s3.services.k8s.aws
+  resources:
+  - buckets
+  - buckets/status
+  verbs:
+  - get
+  - list
+- apiGroups:
   - services.k8s.aws
   resources:
   - fieldexports

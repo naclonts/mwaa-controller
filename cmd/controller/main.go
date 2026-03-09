@@ -19,12 +19,14 @@ import (
 	"context"
 	"os"
 
+	iamapitypes "github.com/aws-controllers-k8s/iam-controller/apis/v1alpha1"
 	ackv1alpha1 "github.com/aws-controllers-k8s/runtime/apis/core/v1alpha1"
 	ackcfg "github.com/aws-controllers-k8s/runtime/pkg/config"
 	ackrt "github.com/aws-controllers-k8s/runtime/pkg/runtime"
 	acktypes "github.com/aws-controllers-k8s/runtime/pkg/types"
 	ackrtutil "github.com/aws-controllers-k8s/runtime/pkg/util"
 	ackrtwebhook "github.com/aws-controllers-k8s/runtime/pkg/webhook"
+	s3apitypes "github.com/aws-controllers-k8s/s3-controller/apis/v1alpha1"
 	flag "github.com/spf13/pflag"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -38,6 +40,8 @@ import (
 
 	svctypes "github.com/aws-controllers-k8s/mwaa-controller/apis/v1alpha1"
 	svcresource "github.com/aws-controllers-k8s/mwaa-controller/pkg/resource"
+
+	_ "github.com/aws-controllers-k8s/mwaa-controller/pkg/resource/environment"
 
 	"github.com/aws-controllers-k8s/mwaa-controller/pkg/version"
 )
@@ -54,6 +58,8 @@ func init() {
 
 	_ = svctypes.AddToScheme(scheme)
 	_ = ackv1alpha1.AddToScheme(scheme)
+	_ = iamapitypes.AddToScheme(scheme)
+	_ = s3apitypes.AddToScheme(scheme)
 }
 
 func main() {
