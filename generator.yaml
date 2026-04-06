@@ -68,7 +68,7 @@ resources:
         references:
           resource: Bucket
           service_name: s3
-          path: Spec.Name
+          path: Status.ACKResourceMetadata.ARN
       KmsKey:
         is_immutable: true
       EndpointManagement:

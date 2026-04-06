@@ -9,3 +9,17 @@
 			)
 		}
 	}
+
+	// Tags are managed via TagResource/UntagResource, not UpdateEnvironment.
+	if delta.DifferentAt("Spec.Tags") {
+		if err := syncTags(
+			ctx, rm.sdkapi, rm.metrics,
+			string(*latest.ko.Status.ACKResourceMetadata.ARN),
+			aws.ToStringMap(desired.ko.Spec.Tags), aws.ToStringMap(latest.ko.Spec.Tags),
+		); err != nil {
+			return nil, err
+		}
+	}
+	if !delta.DifferentExcept("Spec.Tags") {
+		return desired, nil
+	}

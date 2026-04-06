@@ -339,6 +339,12 @@ func (rm *resourceManager) sdkFind(
 	// AirflowConfigurationOptions: GetEnvironment returns redacted values
 	// ("***") for sensitive config options. Preserve the desired values to
 	// prevent false drift detection and infinite update loops.
+	//
+	// NOTE: This means we cannot detect drift for these fields if they are
+	// changed out-of-band (e.g. via the console). The MWAA API does not
+	// provide unredacted values, so there is no way to compare. If a user
+	// changes a sensitive config option outside the controller, the
+	// controller will not notice until the user updates the CR spec.
 	if r.ko.Spec.AirflowConfigurationOptions != nil {
 		ko.Spec.AirflowConfigurationOptions = r.ko.Spec.AirflowConfigurationOptions
 	}
@@ -617,6 +623,20 @@ func (rm *resourceManager) sdkUpdate(
 				ackrequeue.DefaultRequeueAfterDuration,
 			)
 		}
+	}
+
+	// Tags are managed via TagResource/UntagResource, not UpdateEnvironment.
+	if delta.DifferentAt("Spec.Tags") {
+		if err := syncTags(
+			ctx, rm.sdkapi, rm.metrics,
+			string(*latest.ko.Status.ACKResourceMetadata.ARN),
+			aws.ToStringMap(desired.ko.Spec.Tags), aws.ToStringMap(latest.ko.Spec.Tags),
+		); err != nil {
+			return nil, err
+		}
+	}
+	if !delta.DifferentExcept("Spec.Tags") {
+		return desired, nil
 	}
 
 	input, err := rm.newUpdateRequestPayload(ctx, desired, delta)

@@ -213,7 +213,7 @@ func (rm *resourceManager) resolveReferenceForSourceBucketARN(
 		if err := getReferencedResourceState_Bucket(ctx, apiReader, obj, *arr.Name, namespace); err != nil {
 			return hasReferences, err
 		}
-		ko.Spec.SourceBucketARN = (*string)(obj.Spec.Name)
+		ko.Spec.SourceBucketARN = (*string)(obj.Status.ACKResourceMetadata.ARN)
 	}
 
 	return hasReferences, nil
@@ -264,11 +264,11 @@ func getReferencedResourceState_Bucket(
 			"Bucket",
 			namespace, name)
 	}
-	if obj.Spec.Name == nil {
+	if obj.Status.ACKResourceMetadata == nil || obj.Status.ACKResourceMetadata.ARN == nil {
 		return ackerr.ResourceReferenceMissingTargetFieldFor(
 			"Bucket",
 			namespace, name,
-			"Spec.Name")
+			"Status.ACKResourceMetadata.ARN")
 	}
 	return nil
 }
