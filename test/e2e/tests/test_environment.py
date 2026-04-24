@@ -49,11 +49,14 @@ def wait_for_cr_status(ref, target_status, timeout_seconds):
     """Poll the CR until status.status matches target_status."""
     deadline = datetime.datetime.now() + datetime.timedelta(seconds=timeout_seconds)
     while datetime.datetime.now() < deadline:
-        cr = k8s.get_resource(ref)
-        status = cr.get("status", {}).get("status")
-        logging.info(f"CR {ref.name} status: {status}")
-        if status == target_status:
-            return cr
+        try:
+            cr = k8s.get_resource(ref)
+            status = cr.get("status", {}).get("status")
+            logging.info(f"CR {ref.name} status: {status}")
+            if status == target_status:
+                return cr
+        except Exception as e:
+            logging.warning(f"Transient error getting CR {ref.name}: {e}")
         time.sleep(POLL_INTERVAL_SECONDS)
     pytest.fail(f"Timed out waiting for CR status to reach {target_status}")
 
