@@ -108,11 +108,6 @@ func (rm *resourceManager) sdkFind(
 		arn := ackv1alpha1.AWSResourceName(*resp.Environment.Arn)
 		ko.Status.ACKResourceMetadata.ARN = &arn
 	}
-	if resp.Environment.CeleryExecutorQueue != nil {
-		ko.Status.CeleryExecutorQueue = resp.Environment.CeleryExecutorQueue
-	} else {
-		ko.Status.CeleryExecutorQueue = nil
-	}
 	if resp.Environment.CreatedAt != nil {
 		ko.Status.CreatedAt = &metav1.Time{*resp.Environment.CreatedAt}
 	} else {
@@ -948,13 +943,8 @@ func (rm *resourceManager) updateConditions(
 			recoverableCondition.Message = nil
 		}
 	}
-	if syncCondition == nil && onSuccess {
-		syncCondition = &ackv1alpha1.Condition{
-			Type:   ackv1alpha1.ConditionTypeResourceSynced,
-			Status: corev1.ConditionTrue,
-		}
-		ko.Status.Conditions = append(ko.Status.Conditions, syncCondition)
-	}
+	// Required to avoid the "declared but not used" error in the default case
+	_ = syncCondition
 	if terminalCondition != nil || recoverableCondition != nil || syncCondition != nil {
 		return &resource{ko}, true // updated
 	}
@@ -974,8 +964,7 @@ func (rm *resourceManager) terminalAWSError(err error) bool {
 		return false
 	}
 	switch terminalErr.ErrorCode() {
-	case "AccessDeniedException",
-		"ValidationException":
+	case "ValidationException":
 		return true
 	default:
 		return false

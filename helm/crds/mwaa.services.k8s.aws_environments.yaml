@@ -145,6 +145,23 @@ spec:
                 x-kubernetes-validations:
                 - message: Value is immutable once set
                   rule: self == oldSelf
+              kmsKeyRef:
+                description: "AWSResourceReferenceWrapper provides a wrapper around
+                  *AWSResourceReference\ntype to provide more user friendly syntax
+                  for references using 'from' field\nEx:\nAPIIDRef:\n\n\tfrom:\n\t
+                  \ name: my-api"
+                properties:
+                  from:
+                    description: |-
+                      AWSResourceReference provides all the values necessary to reference another
+                      k8s resource for finding the identifier(Id/ARN/Name)
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    type: object
+                type: object
               loggingConfiguration:
                 description: Defines the Apache Airflow logs to send to CloudWatch
                   Logs.
@@ -270,6 +287,26 @@ spec:
                     items:
                       type: string
                     type: array
+                  securityGroupRefs:
+                    description: Reference field for SecurityGroupIDs
+                    items:
+                      description: "AWSResourceReferenceWrapper provides a wrapper
+                        around *AWSResourceReference\ntype to provide more user friendly
+                        syntax for references using 'from' field\nEx:\nAPIIDRef:\n\n\tfrom:\n\t
+                        \ name: my-api"
+                      properties:
+                        from:
+                          description: |-
+                            AWSResourceReference provides all the values necessary to reference another
+                            k8s resource for finding the identifier(Id/ARN/Name)
+                          properties:
+                            name:
+                              type: string
+                            namespace:
+                              type: string
+                          type: object
+                      type: object
+                    type: array
                   subnetIDs:
                     items:
                       type: string
@@ -277,6 +314,26 @@ spec:
                     x-kubernetes-validations:
                     - message: Value is immutable once set
                       rule: self == oldSelf
+                  subnetRefs:
+                    description: Reference field for SubnetIDs
+                    items:
+                      description: "AWSResourceReferenceWrapper provides a wrapper
+                        around *AWSResourceReference\ntype to provide more user friendly
+                        syntax for references using 'from' field\nEx:\nAPIIDRef:\n\n\tfrom:\n\t
+                        \ name: my-api"
+                      properties:
+                        from:
+                          description: |-
+                            AWSResourceReference provides all the values necessary to reference another
+                            k8s resource for finding the identifier(Id/ARN/Name)
+                          properties:
+                            name:
+                              type: string
+                            namespace:
+                              type: string
+                          type: object
+                      type: object
+                    type: array
                 type: object
               pluginsS3ObjectVersion:
                 description: |-
@@ -427,15 +484,6 @@ spec:
                 - ownerAccountID
                 - region
                 type: object
-              celeryExecutorQueue:
-                description: |-
-                  The queue ARN for the environment's Celery Executor (https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/executor/celery.html).
-                  Amazon MWAA uses a Celery Executor to distribute tasks across multiple workers.
-                  When you create an environment in a shared VPC, you must provide access to
-                  the Celery Executor queue from your VPC.
-
-                  Regex Pattern: `^arn:aws(-[a-z]+)?:sqs:[a-z0-9\-]+:\d{12}:[a-zA-Z_0-9+=,.@\-_/]+$`
-                type: string
               conditions:
                 description: |-
                   All CRs managed by ACK have a common `Status.Conditions` member that
@@ -475,12 +523,6 @@ spec:
                 description: The day and time the environment was created.
                 format: date-time
                 type: string
-              databaseVPCEndpointService:
-                description: |-
-                  The VPC endpoint for the environment's Amazon RDS database.
-
-                  Regex Pattern: `^([a-z.-]+)?com\.amazonaws\.vpce\.[a-z0-9\-]+\.[a-zA-Z_0-9+=,.@\-_/]+$`
-                type: string
               lastUpdate:
                 description: The status of the last update on the environment.
                 properties:
@@ -503,13 +545,6 @@ spec:
                   workerReplacementStrategy:
                     type: string
                 type: object
-              serviceRoleARN:
-                description: |-
-                  The Amazon Resource Name (ARN) for the service-linked role of the environment.
-                  For more information, see Amazon MWAA Service-linked role (https://docs.aws.amazon.com/mwaa/latest/userguide/mwaa-slr.html).
-
-                  Regex Pattern: `^arn:aws(-[a-z]+)?:iam::\d{12}:role/?[a-zA-Z_0-9+=,.@\-_/]+$`
-                type: string
               status:
                 description: |-
                   The status of the Amazon MWAA environment.
@@ -569,12 +604,6 @@ spec:
                   For more information, see Accessing the Apache Airflow UI (https://docs.aws.amazon.com/mwaa/latest/userguide/access-airflow-ui.html).
 
                   Regex Pattern: `^https://.+$`
-                type: string
-              webserverVPCEndpointService:
-                description: |-
-                  The VPC endpoint for the environment's web server.
-
-                  Regex Pattern: `^([a-z.-]+)?com\.amazonaws\.vpce\.[a-z0-9\-]+\.[a-zA-Z_0-9+=,.@\-_/]+$`
                 type: string
             type: object
         type: object

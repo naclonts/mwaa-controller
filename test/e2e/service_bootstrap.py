@@ -21,6 +21,7 @@ Creates:
 import json
 import logging
 
+import boto3
 from acktest.bootstrapping import Resources, BootstrapFailureException
 from acktest.bootstrapping.iam import Role, UserPolicies
 from acktest.bootstrapping.s3 import Bucket

@@ -162,6 +162,11 @@ func (in *EnvironmentSpec) DeepCopyInto(out *EnvironmentSpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.KMSKeyRef != nil {
+		in, out := &in.KMSKeyRef, &out.KMSKeyRef
+		*out = new(corev1alpha1.AWSResourceReferenceWrapper)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.LoggingConfiguration != nil {
 		in, out := &in.LoggingConfiguration, &out.LoggingConfiguration
 		*out = new(LoggingConfigurationInput)
@@ -299,29 +304,14 @@ func (in *EnvironmentStatus) DeepCopyInto(out *EnvironmentStatus) {
 			}
 		}
 	}
-	if in.CeleryExecutorQueue != nil {
-		in, out := &in.CeleryExecutorQueue, &out.CeleryExecutorQueue
-		*out = new(string)
-		**out = **in
-	}
 	if in.CreatedAt != nil {
 		in, out := &in.CreatedAt, &out.CreatedAt
 		*out = (*in).DeepCopy()
-	}
-	if in.DatabaseVPCEndpointService != nil {
-		in, out := &in.DatabaseVPCEndpointService, &out.DatabaseVPCEndpointService
-		*out = new(string)
-		**out = **in
 	}
 	if in.LastUpdate != nil {
 		in, out := &in.LastUpdate, &out.LastUpdate
 		*out = new(LastUpdate)
 		(*in).DeepCopyInto(*out)
-	}
-	if in.ServiceRoleARN != nil {
-		in, out := &in.ServiceRoleARN, &out.ServiceRoleARN
-		*out = new(string)
-		**out = **in
 	}
 	if in.Status != nil {
 		in, out := &in.Status, &out.Status
@@ -330,11 +320,6 @@ func (in *EnvironmentStatus) DeepCopyInto(out *EnvironmentStatus) {
 	}
 	if in.WebserverURL != nil {
 		in, out := &in.WebserverURL, &out.WebserverURL
-		*out = new(string)
-		**out = **in
-	}
-	if in.WebserverVPCEndpointService != nil {
-		in, out := &in.WebserverVPCEndpointService, &out.WebserverVPCEndpointService
 		*out = new(string)
 		**out = **in
 	}
@@ -764,6 +749,17 @@ func (in *NetworkConfiguration) DeepCopyInto(out *NetworkConfiguration) {
 			}
 		}
 	}
+	if in.SecurityGroupRefs != nil {
+		in, out := &in.SecurityGroupRefs, &out.SecurityGroupRefs
+		*out = make([]*corev1alpha1.AWSResourceReferenceWrapper, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(corev1alpha1.AWSResourceReferenceWrapper)
+				(*in).DeepCopyInto(*out)
+			}
+		}
+	}
 	if in.SubnetIDs != nil {
 		in, out := &in.SubnetIDs, &out.SubnetIDs
 		*out = make([]*string, len(*in))
@@ -772,6 +768,17 @@ func (in *NetworkConfiguration) DeepCopyInto(out *NetworkConfiguration) {
 				in, out := &(*in)[i], &(*out)[i]
 				*out = new(string)
 				**out = **in
+			}
+		}
+	}
+	if in.SubnetRefs != nil {
+		in, out := &in.SubnetRefs, &out.SubnetRefs
+		*out = make([]*corev1alpha1.AWSResourceReferenceWrapper, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(corev1alpha1.AWSResourceReferenceWrapper)
+				(*in).DeepCopyInto(*out)
 			}
 		}
 	}

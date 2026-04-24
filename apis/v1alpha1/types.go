@@ -150,8 +150,12 @@ type ModuleLoggingConfigurationInput struct {
 // more information, see About networking on Amazon MWAA (https://docs.aws.amazon.com/mwaa/latest/userguide/networking-about.html).
 type NetworkConfiguration struct {
 	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
+	// Reference field for SecurityGroupIDs
+	SecurityGroupRefs []*ackv1alpha1.AWSResourceReferenceWrapper `json:"securityGroupRefs,omitempty"`
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable once set"
 	SubnetIDs []*string `json:"subnetIDs,omitempty"`
+	// Reference field for SubnetIDs
+	SubnetRefs []*ackv1alpha1.AWSResourceReferenceWrapper `json:"subnetRefs,omitempty"`
 }
 
 // Internal only. Represents a set of statistics that describe a specific metric.

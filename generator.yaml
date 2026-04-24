@@ -13,7 +13,6 @@ resources:
         404:
           code: ResourceNotFoundException
       terminal_codes:
-        - AccessDeniedException
         - ValidationException
     fields:
       Name:
@@ -39,26 +38,6 @@ resources:
         from:
           operation: GetEnvironment
           path: Environment.LastUpdate
-      ServiceRoleARN:
-        is_read_only: true
-        from:
-          operation: GetEnvironment
-          path: Environment.ServiceRoleArn
-      CeleryExecutorQueue:
-        is_read_only: true
-        from:
-          operation: GetEnvironment
-          path: Environment.CeleryExecutorQueue
-      DatabaseVPCEndpointService:
-        is_read_only: true
-        from:
-          operation: GetEnvironment
-          path: Environment.DatabaseVpcEndpointService
-      WebserverVPCEndpointService:
-        is_read_only: true
-        from:
-          operation: GetEnvironment
-          path: Environment.WebserverVpcEndpointService
       ExecutionRoleARN:
         references:
           resource: Role
@@ -71,13 +50,26 @@ resources:
           path: Status.ACKResourceMetadata.ARN
       KmsKey:
         is_immutable: true
+        references:
+          resource: Key
+          service_name: kms
+          path: Status.ACKResourceMetadata.ARN
+      NetworkConfiguration.SecurityGroupIds:
+        references:
+          resource: SecurityGroup
+          service_name: ec2
+          path: Status.ID
+      NetworkConfiguration.SubnetIds:
+        is_immutable: true
+        references:
+          resource: Subnet
+          service_name: ec2
+          path: Status.SubnetID
       EndpointManagement:
         is_immutable: true
         late_initialize: {}
       LoggingConfiguration:
         late_initialize: {}
-      NetworkConfiguration.SubnetIds:
-        is_immutable: true
       EnvironmentClass:
         late_initialize: {}
       AirflowVersion:
@@ -106,8 +98,6 @@ resources:
         - path: Status.Status
           in:
             - AVAILABLE
-    reconcile:
-      requeue_on_success_seconds: 300
     print:
       add_age_column: true
       add_synced_column: true

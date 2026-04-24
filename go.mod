@@ -3,7 +3,9 @@ module github.com/aws-controllers-k8s/mwaa-controller
 go 1.25.0
 
 require (
+	github.com/aws-controllers-k8s/ec2-controller v1.11.1
 	github.com/aws-controllers-k8s/iam-controller v1.6.2
+	github.com/aws-controllers-k8s/kms-controller v1.2.3
 	github.com/aws-controllers-k8s/runtime v0.58.0
 	github.com/aws-controllers-k8s/s3-controller v1.3.2
 	github.com/aws/aws-sdk-go v1.55.8
@@ -25,8 +27,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.19 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.19 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.1 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.2 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.12.10 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.5 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.18 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.24.7 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.28.6 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.33.2 // indirect

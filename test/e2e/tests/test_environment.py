@@ -79,7 +79,7 @@ def wait_for_environment_status(mwaa_client, env_name, target_status, timeout_se
 
 
 @service_marker
-@pytest.mark.slow
+@pytest.mark.canary
 class TestEnvironment:
     def test_create_update_delete(self, mwaa_client):
         env_name = random_suffix_name("ack-mwaa", 32)

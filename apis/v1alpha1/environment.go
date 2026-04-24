@@ -75,7 +75,8 @@ type EnvironmentSpec struct {
 	//
 	// Regex Pattern: `^(((arn:aws(-[a-z]+)?:kms:[a-z]{2}-[a-z]+-\d:\d+:)?key\/)?[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}|(arn:aws(-[a-z]+)?:kms:[a-z]{2}-[a-z]+-\d:\d+:)?alias/.+)$`
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable once set"
-	KMSKey *string `json:"kmsKey,omitempty"`
+	KMSKey    *string                                  `json:"kmsKey,omitempty"`
+	KMSKeyRef *ackv1alpha1.AWSResourceReferenceWrapper `json:"kmsKeyRef,omitempty"`
 	// Defines the Apache Airflow logs to send to CloudWatch Logs.
 	LoggingConfiguration *LoggingConfigurationInput `json:"loggingConfiguration,omitempty"`
 	// The maximum number of web servers that you want to run in your environment.
@@ -214,31 +215,12 @@ type EnvironmentStatus struct {
 	// resource
 	// +kubebuilder:validation:Optional
 	Conditions []*ackv1alpha1.Condition `json:"conditions"`
-	// The queue ARN for the environment's Celery Executor (https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/executor/celery.html).
-	// Amazon MWAA uses a Celery Executor to distribute tasks across multiple workers.
-	// When you create an environment in a shared VPC, you must provide access to
-	// the Celery Executor queue from your VPC.
-	//
-	// Regex Pattern: `^arn:aws(-[a-z]+)?:sqs:[a-z0-9\-]+:\d{12}:[a-zA-Z_0-9+=,.@\-_/]+$`
-	// +kubebuilder:validation:Optional
-	CeleryExecutorQueue *string `json:"celeryExecutorQueue,omitempty"`
 	// The day and time the environment was created.
 	// +kubebuilder:validation:Optional
 	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
-	// The VPC endpoint for the environment's Amazon RDS database.
-	//
-	// Regex Pattern: `^([a-z.-]+)?com\.amazonaws\.vpce\.[a-z0-9\-]+\.[a-zA-Z_0-9+=,.@\-_/]+$`
-	// +kubebuilder:validation:Optional
-	DatabaseVPCEndpointService *string `json:"databaseVPCEndpointService,omitempty"`
 	// The status of the last update on the environment.
 	// +kubebuilder:validation:Optional
 	LastUpdate *LastUpdate `json:"lastUpdate,omitempty"`
-	// The Amazon Resource Name (ARN) for the service-linked role of the environment.
-	// For more information, see Amazon MWAA Service-linked role (https://docs.aws.amazon.com/mwaa/latest/userguide/mwaa-slr.html).
-	//
-	// Regex Pattern: `^arn:aws(-[a-z]+)?:iam::\d{12}:role/?[a-zA-Z_0-9+=,.@\-_/]+$`
-	// +kubebuilder:validation:Optional
-	ServiceRoleARN *string `json:"serviceRoleARN,omitempty"`
 	// The status of the Amazon MWAA environment.
 	//
 	// Valid values:
@@ -297,11 +279,6 @@ type EnvironmentStatus struct {
 	// Regex Pattern: `^https://.+$`
 	// +kubebuilder:validation:Optional
 	WebserverURL *string `json:"webserverURL,omitempty"`
-	// The VPC endpoint for the environment's web server.
-	//
-	// Regex Pattern: `^([a-z.-]+)?com\.amazonaws\.vpce\.[a-z0-9\-]+\.[a-zA-Z_0-9+=,.@\-_/]+$`
-	// +kubebuilder:validation:Optional
-	WebserverVPCEndpointService *string `json:"webserverVPCEndpointService,omitempty"`
 }
 
 // Environment is the Schema for the Environments API
