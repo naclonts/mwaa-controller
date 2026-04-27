@@ -1,20 +1,25 @@
 	// AirflowConfigurationOptions: GetEnvironment returns redacted values
-	// ("***") for sensitive config options. Preserve the desired values to
-	// prevent false drift detection and infinite update loops.
+	// ("***") for values MWAA considers sensitive (e.g. secrets.backend_kwargs,
+	// core.fernet_key, core.sql_alchemy_conn). Copy the stored desired values
+	// onto the observed resource so the delta comparator does not see the
+	// redacted "***" as a diff, which would trigger an infinite update loop.
 	//
-	// NOTE: This means we cannot detect drift for these fields if they are
-	// changed out-of-band (e.g. via the console). The MWAA API does not
-	// provide unredacted values, so there is no way to compare. If a user
-	// changes a sensitive config option outside the controller, the
-	// controller will not notice until the user updates the CR spec.
+	// This does NOT disable spec-change detection: when the user patches the
+	// CR, the reconciler compares the new desired spec against `latest` (which
+	// carries the previously-stored desired values via this copy), sees a real
+	// diff, and calls UpdateEnvironment. User-initiated updates work correctly.
+	//
+	// Limitation: we cannot detect drift caused by out-of-band edits to
+	// sensitive keys (e.g. changes made in the MWAA console). There is no
+	// unredacted read path in the MWAA API. Terraform handles this the same
+	// way (field marked Sensitive, diff suppressed). For values that must stay
+	// in sync, use the AWS Secrets Manager backend for Airflow:
+	// https://docs.aws.amazon.com/mwaa/latest/userguide/connections-secrets-manager.html
 	if r.ko.Spec.AirflowConfigurationOptions != nil {
 		ko.Spec.AirflowConfigurationOptions = r.ko.Spec.AirflowConfigurationOptions
 	}
 
 	// Return terminal error for failure states so updateConditions preserves it.
-	// NOTE: UPDATE_FAILED is intentionally excluded — MWAA rolls back to the
-	// previous configuration and the environment returns to AVAILABLE, so the
-	// controller should requeue and let the user fix their spec.
 	if ko.Status.Status != nil {
 		status := *ko.Status.Status
 		if status == string(svcsdktypes.EnvironmentStatusCreateFailed) ||
@@ -23,4 +28,36 @@
 				fmt.Errorf("environment is in terminal state: %s", status),
 			)
 		}
+	}
+
+	// Surface UPDATE_FAILED to the user.
+	//
+	// MWAA rolls back after a failed update and the environment returns to
+	// AVAILABLE, but Status.LastUpdate.Status stays "FAILED" and
+	// Status.LastUpdate.Error carries the reason. Without this, the user
+	// has no signal that their patch silently failed — the CR would simply
+	// show ACK.ResourceSynced=True with stale config.
+	//
+	// Using a non-terminal error (not NewTerminalError) so that:
+	//   - ACK.ResourceSynced is set to False with this message as the reason
+	//   - The next user CR patch triggers a new Update attempt; on success,
+	//     MWAA overwrites LastUpdate.Status to SUCCESS and this branch no
+	//     longer fires, clearing the condition automatically.
+	if ko.Status.LastUpdate != nil &&
+		ko.Status.LastUpdate.Status != nil &&
+		*ko.Status.LastUpdate.Status == string(svcsdktypes.UpdateStatusFailed) {
+		code := "Unknown"
+		msg := "update failed with no error details"
+		if ko.Status.LastUpdate.Error != nil {
+			if ko.Status.LastUpdate.Error.ErrorCode != nil {
+				code = *ko.Status.LastUpdate.Error.ErrorCode
+			}
+			if ko.Status.LastUpdate.Error.ErrorMessage != nil {
+				msg = *ko.Status.LastUpdate.Error.ErrorMessage
+			}
+		}
+		return &resource{ko}, ackrequeue.NeededAfter(
+			fmt.Errorf("last UpdateEnvironment failed: %s: %s; patch the spec to retry", code, msg),
+			ackrequeue.DefaultRequeueAfterDuration,
+		)
 	}
