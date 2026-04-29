@@ -43,13 +43,14 @@ from e2e.replacement_values import REPLACEMENT_VALUES
 
 RESOURCE_PLURAL = "environments"
 
-# MWAA create takes ~25-35 min; cap at 120 min to absorb API slowness and
-# leave headroom under the Prow PR-check timeout. Poll every 60s.
+# MWAA create takes ~25-35 min typically but can exceed 90 min in a busy
+# test account; cap at 120 min to absorb that. Poll every 60s.
 CREATE_TIMEOUT_SECONDS = 60 * 120
-# MWAA update takes ~15-35 min
-UPDATE_TIMEOUT_SECONDS = 60 * 45
-# MWAA delete takes ~10-25 min
-DELETE_TIMEOUT_SECONDS = 60 * 30
+# MWAA update takes ~15-35 min typically but we have observed >45 min in
+# the test account, so give it 120 min of headroom.
+UPDATE_TIMEOUT_SECONDS = 60 * 120
+# MWAA delete takes ~10-25 min typically; give it 60 min of headroom.
+DELETE_TIMEOUT_SECONDS = 60 * 60
 
 POLL_INTERVAL_SECONDS = 60
 

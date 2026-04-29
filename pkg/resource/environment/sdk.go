@@ -371,28 +371,19 @@ func (rm *resourceManager) sdkFind(
 	// has no signal that their patch silently failed — the CR would simply
 	// show ACK.ResourceSynced=True with stale config.
 	//
-	// Using a non-terminal error (not NewTerminalError) so that:
-	//   - ACK.ResourceSynced is set to False with this message as the reason
+	// Explicitly set ACK.ResourceSynced=False with the failure details in
+	// the condition's `message` field; the runtime's ensureConditions guard
+	// (`if ackcondition.Synced(res) == nil`) preserves this instead of
+	// overwriting with the generic "Unable to determine..." Unknown status
+	// it would otherwise assign for a non-terminal requeue error.
+	//
+	// Using a non-terminal requeue error (not NewTerminalError) so that:
+	//   - The requeue timer still drives re-polling of GetEnvironment
 	//   - The next user CR patch triggers a new Update attempt; on success,
 	//     MWAA overwrites LastUpdate.Status to SUCCESS and this branch no
 	//     longer fires, clearing the condition automatically.
-	if ko.Status.LastUpdate != nil &&
-		ko.Status.LastUpdate.Status != nil &&
-		*ko.Status.LastUpdate.Status == string(svcsdktypes.UpdateStatusFailed) {
-		code := "Unknown"
-		msg := "update failed with no error details"
-		if ko.Status.LastUpdate.Error != nil {
-			if ko.Status.LastUpdate.Error.ErrorCode != nil {
-				code = *ko.Status.LastUpdate.Error.ErrorCode
-			}
-			if ko.Status.LastUpdate.Error.ErrorMessage != nil {
-				msg = *ko.Status.LastUpdate.Error.ErrorMessage
-			}
-		}
-		return &resource{ko}, ackrequeue.NeededAfter(
-			fmt.Errorf("last UpdateEnvironment failed: %s: %s; patch the spec to retry", code, msg),
-			ackrequeue.DefaultRequeueAfterDuration,
-		)
+	if res, err := handleUpdateFailed(&resource{ko}); err != nil {
+		return res, err
 	}
 
 	return &resource{ko}, nil
